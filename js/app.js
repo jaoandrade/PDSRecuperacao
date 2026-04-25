@@ -18,11 +18,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnLogout = document.getElementById('logout-btn');
   const elCurrentDate = document.getElementById('current-date');
   const customTaskForm = document.getElementById('custom-task-form');
+  const elStatStreak = document.getElementById('stat-streak');
+  const elQuote = document.getElementById('daily-quote');
+  const activityFeedContainer = document.getElementById('activity-feed-container');
+  const calendarGrid = document.getElementById('calendar-grid');
+  const calendarMonthName = document.getElementById('calendar-month-name');
 
   if (elCurrentDate) {
     const today = new Date();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     elCurrentDate.textContent = today.toLocaleDateString('pt-PT', options);
+  }
+
+  if (elQuote) {
+    const quotes = [
+      "A disciplina é a ponte entre objetivos e realizações.",
+      "O sucesso é a soma de pequenos esforços repetidos dia após dia.",
+      "Não importa o quão devagar fores, desde que não pares.",
+      "A motivação faz-te começar, o hábito faz-te continuar.",
+      "Faz hoje o que te vai orgulhar amanhã.",
+      "O segredo para avançar é começar."
+    ];
+    const quoteIndex = new Date().getDay() % quotes.length;
+    elQuote.textContent = `"${quotes[quoteIndex]}"`;
   }
 
   // Inicializar UI com dados locais (para rapidez)
@@ -92,8 +110,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         ];
       }
 
+      // Fetch user_progress_logs para feed e calendário
+      const { data: logs, error: logsError } = await supabaseClient
+        .from('user_progress_logs')
+        .select('*')
+        .eq('user_id', userData.id)
+        .order('created_at', { ascending: false });
+        
+      let userLogs = (!logsError && logs) ? logs : [];
+
       updateUI();
       renderMissions();
+      renderActivityFeed(userLogs);
+      renderCalendar(userLogs);
     } catch (err) {
       console.error('Erro ao buscar dados:', err);
     }
@@ -140,6 +169,107 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  function renderActivityFeed(logs) {
+    if (!activityFeedContainer) return;
+    activityFeedContainer.innerHTML = '';
+    
+    if (logs.length === 0) {
+      activityFeedContainer.innerHTML = '<li style="color: var(--text-muted); font-size: 0.9rem; text-align: center; list-style: none;">Sem atividade recente...</li>';
+      return;
+    }
+    
+    // Mostra apenas os 10 mais recentes
+    logs.slice(0, 10).forEach(log => {
+      const li = document.createElement('li');
+      li.className = 'activity-item';
+      
+      const iconClass = log.level_up_occurred ? 'fa-level-up-alt' : 'fa-check';
+      const iconColor = log.level_up_occurred ? 'var(--primary-color)' : 'var(--success)';
+      const date = new Date(log.created_at);
+      
+      li.innerHTML = `
+        <div class="activity-icon" style="color: ${iconColor}"><i class="fas ${iconClass}"></i></div>
+        <div class="activity-content">
+          <div class="activity-text">${log.description || 'Tarefa concluída'} <span style="color:var(--success); font-weight:bold;">+${log.points_earned} XP</span></div>
+          <div class="activity-time">${date.toLocaleDateString('pt-PT')} às ${date.toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'})}</div>
+        </div>
+      `;
+      activityFeedContainer.appendChild(li);
+    });
+  }
+
+  function renderCalendar(logs) {
+    if (!calendarGrid || !calendarMonthName) return;
+    
+    const today = new Date();
+    calendarMonthName.textContent = today.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+    
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    calendarGrid.innerHTML = '';
+    
+    // Agrupar pontos por dia
+    const pointsPerDay = {};
+    logs.forEach(log => {
+      const dateStr = new Date(log.created_at).toISOString().split('T')[0];
+      pointsPerDay[dateStr] = (pointsPerDay[dateStr] || 0) + log.points_earned;
+    });
+
+    // Calcular Streak
+    let currentStreak = 0;
+    let checkDate = new Date();
+    
+    while (true) {
+      const dateStr = checkDate.toISOString().split('T')[0];
+      // Consideramos "dia concluído" se ganhou pelo menos 10 pontos
+      if (pointsPerDay[dateStr] && pointsPerDay[dateStr] >= 10) {
+        currentStreak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        const isToday = checkDate.toDateString() === today.toDateString();
+        if (isToday) {
+            checkDate.setDate(checkDate.getDate() - 1);
+            const yesterdayStr = checkDate.toISOString().split('T')[0];
+            if (pointsPerDay[yesterdayStr] && pointsPerDay[yesterdayStr] >= 10) {
+                // Streak mantém-se se ainda tem de completar as de hoje
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+      }
+    }
+    
+    if (elStatStreak) {
+      elStatStreak.textContent = `${currentStreak} 🔥`;
+    }
+
+    // Gerar grelha do calendário
+    for (let i = 1; i <= daysInMonth; i++) {
+      const dayDate = new Date(year, month, i);
+      // Fuso horário local offset para evitar que mude de dia
+      const localDateStr = new Date(dayDate.getTime() - (dayDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+      const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+      
+      const dayDiv = document.createElement('div');
+      dayDiv.className = 'calendar-day';
+      dayDiv.textContent = i;
+      
+      if (localDateStr === todayStr) {
+        dayDiv.classList.add('day-today');
+      }
+      
+      if (pointsPerDay[localDateStr] && pointsPerDay[localDateStr] >= 10) {
+        dayDiv.classList.add('day-completed');
+      }
+      
+      calendarGrid.appendChild(dayDiv);
+    }
+  }
+
   // Função para concluir missão
   window.completeMission = async (id) => {
     const mission = currentMissions.find(m => m.id === id);
@@ -180,20 +310,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     userData.total_points = newTotalPoints;
     userData.completed_tasks = newCompletedTasks;
     
-    showToast(`Ganhaste ${mission.points} pontos em ${mission.category}!`, 'gained');
-
+    let levelUp = false;
     if (newLevel > userData.level) {
       userData.level = newLevel;
+      levelUp = true;
       setTimeout(() => showToast(`Subiste para o Nível ${userData.level}!`, 'levelup'), 1000);
     }
+
+    // Registar no feed
+    try {
+      await supabaseClient.from('user_progress_logs').insert([{
+        user_id: userData.id,
+        points_earned: mission.points,
+        description: `Concluiu: ${mission.title}`,
+        level_up_occurred: levelUp
+      }]);
+    } catch(err) { console.error(err); }
+    
+    showToast(`Ganhaste ${mission.points} pontos em ${mission.category}!`, 'gained');
 
     if (userData.current_month_points >= 100 && (userData.current_month_points - mission.points) < 100) {
       setTimeout(() => showToast(`Parabéns! Completaste a meta mensal de 100 pontos!`, 'levelup'), 1500);
     }
 
     localStorage.setItem('mission_user', JSON.stringify(userData));
-    updateUI();
-    renderMissions();
+    // Re-fetch para atualizar calendário e feed
+    await fetchData();
   };
 
   function showToast(message, type) {

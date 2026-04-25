@@ -26,6 +26,11 @@
       </div>
     </header>
 
+    <!-- Frase Motivacional -->
+    <div class="quote-banner glass-panel" style="margin-bottom: 24px; text-align: center; padding: 16px;">
+      <p id="daily-quote" style="font-style: italic; color: var(--text-muted);">"A carregar inspiração..."</p>
+    </div>
+
     <div class="dashboard-grid">
       <!-- Coluna Principal (Progresso Mensal e Missões) -->
       <main class="main-content">
@@ -69,6 +74,15 @@
           </div>
         </section>
 
+        <!-- Feed de Atividades Recentes -->
+        <section class="activity-section glass-panel">
+          <h3 class="section-title"><i class="fas fa-history text-gradient"></i> Atividade Recente</h3>
+          <ul class="activity-feed" id="activity-feed-container">
+            <!-- Feed injectado aqui -->
+            <li style="color: var(--text-muted); font-size: 0.9rem; text-align: center; list-style: none;">Sem atividade recente...</li>
+          </ul>
+        </section>
+
       </main>
 
       <!-- Coluna Lateral (Estatísticas) -->
@@ -84,6 +98,10 @@
             <div class="stat-value" id="stat-tasks-done">0</div>
             <div class="stat-label">Missões Concluídas</div>
           </div>
+          <div class="stat-card" style="border-color: rgba(245, 158, 11, 0.3);">
+            <div class="stat-value" id="stat-streak" style="color: #fbbf24;">0 🔥</div>
+            <div class="stat-label">Dias Seguidos</div>
+          </div>
           <div class="stat-card">
             <div class="level-badge">Nível <span id="stat-level">1</span></div>
             <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 5px;">+ Exigente</p>
@@ -92,6 +110,18 @@
           <button class="btn btn-solid logout-btn" id="logout-btn">
             Logout <i class="fas fa-sign-out-alt"></i>
           </button>
+        </div>
+
+        <!-- Calendário Mensal -->
+        <div class="calendar-section glass-panel" style="margin-top: 24px;">
+          <h3 class="section-title" style="font-size: 0.9rem;"><i class="far fa-calendar-alt text-gradient"></i> Hábitos: <span id="calendar-month-name">Mês</span></h3>
+          <div class="calendar-grid" id="calendar-grid">
+            <!-- Dias injetados aqui -->
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 10px; font-size: 0.7rem; color: var(--text-muted); justify-content: center;">
+            <span style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background:var(--success); border-radius:50%;"></span> Perfeito</span>
+            <span style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background:var(--panel-border); border-radius:50%;"></span> Pendente</span>
+          </div>
         </div>
       </aside>
 
