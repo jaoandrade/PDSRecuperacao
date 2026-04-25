@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mission Reality | Dashboard Principal</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <header class="dashboard-header glass-panel">
+      <div class="logo-section">
+        <i class="fas fa-gamepad text-gradient" style="font-size: 2rem;"></i>
+        <h2>Mission Reality</h2>
+      </div>
+      
+      <div class="user-profile">
+        <div class="user-info" style="text-align: right;">
+          <h3 id="profile-name">Nome do Utilizador</h3>
+          <span class="level">Nível <span id="profile-level">1</span></span>
+        </div>
+        <div class="avatar" style="background-image: url('https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=0d1117');"></div>
+      </div>
+    </header>
+
+    <div class="dashboard-grid">
+      <!-- Coluna Principal (Progresso Mensal e Missões) -->
+      <main class="main-content">
+        
+        <!-- Progresso do utilizador -->
+        <section class="progress-section glass-panel">
+          <h3 class="section-title"><i class="fas fa-chart-line text-gradient"></i> Resumo do Progresso (Este Mês)</h3>
+          
+          <div class="progress-header">
+            <span>Objetivo: 100 Pontos</span>
+            <span class="points-badge"><span id="current-points">0</span> / 100 XP</span>
+          </div>
+          
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="month-progress" style="width: 0%;"></div>
+          </div>
+        </section>
+
+        <!-- Missões Ativas -->
+        <section class="missions-section glass-panel">
+          <h3 class="section-title"><i class="fas fa-tasks text-gradient"></i> Missões Ativas do Dia</h3>
+          
+          <div class="missions-list" id="missions-container">
+            <!-- As missões serão injectadas via JavaScript aqui -->
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Coluna Lateral (Estatísticas) -->
+      <aside class="sidebar">
+        <h3 class="section-title"><i class="fas fa-chart-pie text-gradient"></i> Estatísticas</h3>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-total-points">0</div>
+            <div class="stat-label">Pontos Totais</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-tasks-done">0</div>
+            <div class="stat-label">Missões Concluídas</div>
+          </div>
+          <div class="stat-card">
+            <div class="level-badge">Nível <span id="stat-level">1</span></div>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 5px;">+ Exigente</p>
+          </div>
+          
+          <button class="btn btn-solid logout-btn" id="logout-btn">
+            Logout <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </aside>
+
+    </div>
+
+  </div>
+
+  <div id="toast-container"></div>
+
+  <!-- Supabase Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
