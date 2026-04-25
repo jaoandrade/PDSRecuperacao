@@ -1,12 +1,10 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  // Verificar Autenticação Local (Token de sessão simplificado)
   let userData = JSON.parse(localStorage.getItem('mission_user'));
   if (!userData) {
     window.location.href = 'index.html';
     return;
   }
 
-  // Elementos do DOM
   const elProfileName = document.getElementById('profile-name');
   const elProfileLevel = document.getElementById('profile-level');
   const elStatLevel = document.getElementById('stat-level');
@@ -43,15 +41,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     elQuote.textContent = `"${quotes[quoteIndex]}"`;
   }
 
-  // Inicializar UI com dados locais (para rapidez)
   elProfileName.textContent = userData.name;
 
   let currentMissions = [];
 
-  // Função para buscar dados frescos do Supabase
   async function fetchData() {
     try {
-      // 1. Atualizar dados do Utilizador
       const { data: user, error: userError } = await supabaseClient
         .from('users')
         .select('*')
@@ -63,12 +58,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.setItem('mission_user', JSON.stringify(userData));
       }
 
-      // 2. Buscar Missões (da tabela missions ou user_missions)
       const { data: missions, error: missionsError } = await supabaseClient
         .from('missions')
         .select('*');
 
-      // Buscar missões personalizadas do utilizador
       const { data: userMissions, error: userMissionsError } = await supabaseClient
         .from('user_missions')
         .select('*')
@@ -102,7 +95,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (fetchedMissions.length > 0) {
         currentMissions = fetchedMissions;
       } else {
-        // Fallback se a tabela estiver vazia
         currentMissions = [
           { id: '1', title: 'Estudar Programação (1h)', category: 'estudo', points: 5, completed: false },
           { id: '2', title: 'Fazer 30 min de caminhada', category: 'saude', points: 10, completed: false },
@@ -110,7 +102,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         ];
       }
 
-      // Fetch user_progress_logs para feed e calendário
       const { data: logs, error: logsError } = await supabaseClient
         .from('user_progress_logs')
         .select('*')
@@ -128,21 +119,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Atualizar UI Geral
   function updateUI() {
     elProfileLevel.textContent = userData.level;
     elStatLevel.textContent = userData.level;
     elStatTotalPoints.textContent = userData.total_points;
     elCurrentPoints.textContent = userData.current_month_points;
     
-    // Buscar contagem real de missões concluídas se tivéssemos user_missions
     elStatTasksDone.textContent = userData.completed_tasks || 0; 
     
     let percentage = Math.min((userData.current_month_points / 100) * 100, 100);
     elMonthProgress.style.width = percentage + '%';
   }
 
-  // Renderizar Missões
   function renderMissions() {
     missionsContainer.innerHTML = '';
     
@@ -178,7 +166,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     
-    // Mostra apenas os 10 mais recentes
     logs.slice(0, 10).forEach(log => {
       const li = document.createElement('li');
       li.className = 'activity-item';
@@ -210,20 +197,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     calendarGrid.innerHTML = '';
     
-    // Agrupar pontos por dia
     const pointsPerDay = {};
     logs.forEach(log => {
       const dateStr = new Date(log.created_at).toISOString().split('T')[0];
       pointsPerDay[dateStr] = (pointsPerDay[dateStr] || 0) + log.points_earned;
     });
 
-    // Calcular Streak
     let currentStreak = 0;
     let checkDate = new Date();
     
     while (true) {
       const dateStr = checkDate.toISOString().split('T')[0];
-      // Consideramos "dia concluído" se ganhou pelo menos 10 pontos
       if (pointsPerDay[dateStr] && pointsPerDay[dateStr] >= 10) {
         currentStreak++;
         checkDate.setDate(checkDate.getDate() - 1);
@@ -233,7 +217,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkDate.setDate(checkDate.getDate() - 1);
             const yesterdayStr = checkDate.toISOString().split('T')[0];
             if (pointsPerDay[yesterdayStr] && pointsPerDay[yesterdayStr] >= 10) {
-                // Streak mantém-se se ainda tem de completar as de hoje
             } else {
                 break;
             }
@@ -247,10 +230,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       elStatStreak.textContent = `${currentStreak} 🔥`;
     }
 
-    // Gerar grelha do calendário
     for (let i = 1; i <= daysInMonth; i++) {
       const dayDate = new Date(year, month, i);
-      // Fuso horário local offset para evitar que mude de dia
       const localDateStr = new Date(dayDate.getTime() - (dayDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
       const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
       
@@ -270,7 +251,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Função para concluir missão
   window.completeMission = async (id) => {
     const mission = currentMissions.find(m => m.id === id);
     if (!mission || mission.completed) return;
@@ -284,7 +264,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         .eq('id', mission.id);
     }
     
-    // Atualizar no Supabase
     const newMonthPoints = userData.current_month_points + mission.points;
     const newTotalPoints = userData.total_points + mission.points;
     const newCompletedTasks = (userData.completed_tasks || 0) + 1;
@@ -305,7 +284,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Atualizar localmente para feedback imediato
     userData.current_month_points = newMonthPoints;
     userData.total_points = newTotalPoints;
     userData.completed_tasks = newCompletedTasks;
@@ -317,7 +295,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       setTimeout(() => showToast(`Subiste para o Nível ${userData.level}!`, 'levelup'), 1000);
     }
 
-    // Registar no feed
     try {
       await supabaseClient.from('user_progress_logs').insert([{
         user_id: userData.id,
@@ -334,7 +311,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     localStorage.setItem('mission_user', JSON.stringify(userData));
-    // Re-fetch para atualizar calendário e feed
     await fetchData();
   };
 
@@ -370,7 +346,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         id: tempId,
         title: title,
         category: category,
-        points: 5, // Pontos base para tarefa personalizada
+        points: 5,
         completed: false,
         isCustom: true
       };
@@ -389,7 +365,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           .single();
           
         if (!error && data) {
-          newTask.id = data.id; // Atualiza com o ID real da BD
+          newTask.id = data.id;
         } else {
           console.warn('Não foi possível guardar na BD, mas foi adicionada localmente.', error);
         }
@@ -405,6 +381,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Inicialização Real
   await fetchData();
 });

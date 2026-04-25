@@ -1,14 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Slate/Corporate Dark Theme */
   --bg-color: #0f172a;
   --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   --panel-bg: rgba(30, 41, 59, 0.7);
   --panel-border: rgba(148, 163, 184, 0.1);
-  --primary-color: #3b82f6;      /* Blue */
+  --primary-color: #3b82f6;
   --primary-hover: #2563eb;
-  --secondary-color: #10b981;    /* Emerald */
+  --secondary-color: #10b981;
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --success: #10b981;
@@ -38,9 +37,7 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.025em;
 }
 
-/* ========================================= */
-/* UTILITIES & ANIMATIONS                    */
-/* ========================================= */
+
 
 .glass-panel {
   background: var(--panel-bg);
@@ -91,9 +88,7 @@ h1, h2, h3, h4, h5, h6 {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ========================================= */
-/* LAYOUTS                                   */
-/* ========================================= */
+
 
 .container {
   max-width: 1100px;
@@ -102,7 +97,6 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
 }
 
-/* AUTHENTICATION (index.html) */
 .auth-wrapper {
   display: flex;
   justify-content: center;
@@ -181,8 +175,6 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: underline;
 }
 
-/* DASHBOARD LAYOUT (dashboard.html) */
-
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -241,8 +233,6 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr;
   }
 }
-
-/* LEFT COLUMN - MISSIONS & PROGRESS */
 
 .progress-section {
   margin-bottom: 24px;
@@ -369,8 +359,6 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--success);
 }
 
-/* RIGHT COLUMN - STATS */
-
 .stats-grid {
   display: flex;
   flex-direction: column;
@@ -425,7 +413,6 @@ h3 {
   margin-bottom: 12px;
 }
 
-/* Modais/Toast messages */
 #toast-container {
   position: fixed;
   bottom: 20px;
@@ -457,10 +444,6 @@ h3 {
 .toast-levelup {
   border-left-color: var(--primary-color);
 }
-
-/* ========================================= */
-/* EXTRA COMPONENTS (Calendar, Feed, Quotes) */
-/* ========================================= */
 
 .calendar-grid {
   display: grid;

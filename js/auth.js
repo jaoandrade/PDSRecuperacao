@@ -31,12 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('login-password').value;
 
       try {
-        // Busca o utilizador na tabela 'users' verificando email e senha
         const { data, error } = await supabaseClient
           .from('users')
           .select('*')
           .eq('email', email)
-          .eq('password', password) // Verificação simples
+          .eq('password', password)
           .single();
 
         if (error || !data) {
@@ -60,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('reg-password').value;
       
       try {
-        // Insere o novo utilizador no Supabase
         const { data, error } = await supabaseClient
           .from('users')
           .insert([
