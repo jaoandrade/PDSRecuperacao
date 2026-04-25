@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,27 +8,28 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
 
   <div class="auth-wrapper container">
     <div class="glass-panel auth-box" id="login-panel">
       <h1><span class="text-gradient">Mission</span> Reality</h1>
       <p>Gestão de Desempenho e Produtividade.</p>
-      
+
       <form id="login-form">
         <div class="input-group">
           <label for="login-email">Email / ID de Utilizador</label>
           <input type="email" id="login-email" placeholder="Insira o seu email" required>
         </div>
-        
+
         <div class="input-group">
           <label for="login-password">Senha de Acesso</label>
           <input type="password" id="login-password" placeholder="Insira a sua senha" required>
         </div>
-        
+
         <button type="submit" class="btn btn-solid auth-btn">Iniciar Sessão <i class="fas fa-sign-in-alt"></i></button>
       </form>
-      
+
       <div class="auth-links">
         Ainda não tem perfil? <a href="#" id="go-to-register">Registar Nova Conta</a>
       </div>
@@ -39,18 +41,23 @@
 
       <form id="register-form">
         <div class="input-group">
-          <label for="reg-name">Nome Completo</label>
+          <label for="reg-name">Nome</label>
           <input type="text" id="reg-name" placeholder="Ex: João Silva" required>
         </div>
 
         <div class="input-group">
-          <label for="reg-email">Email Profissional</label>
+          <label for="reg-email">Email</label>
           <input type="email" id="reg-email" placeholder="O seu email" required>
         </div>
-        
+
+        <div class="input-group">
+          <label for="reg-password">Senha</label>
+          <input type="password" id="reg-password" placeholder="Crie uma senha" required>
+        </div>
+
         <button type="submit" class="btn btn-solid auth-btn">Criar Conta <i class="fas fa-user-plus"></i></button>
       </form>
-      
+
       <div class="auth-links">
         Já tem conta? <a href="#" id="go-to-login">Entrar no Sistema</a>
       </div>
@@ -62,4 +69,5 @@
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
 </body>
+
 </html>

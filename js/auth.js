@@ -31,19 +31,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('login-password').value;
 
       try {
-        // Busca o utilizador na tabela 'users'
-        const { data, error } = await supabase
+        // Busca o utilizador na tabela 'users' verificando email e senha
+        const { data, error } = await supabaseClient
           .from('users')
           .select('*')
           .eq('email', email)
+          .eq('password', password) // Verificação simples
           .single();
 
         if (error || !data) {
-          alert('Utilizador não encontrado ou erro na conexão.');
+          alert('Email ou Senha incorretos.');
           return;
         }
 
-        // Simulação de login (em produção usaria supabase.auth)
         localStorage.setItem('mission_user', JSON.stringify(data));
         window.location.href = 'dashboard.html';
       } catch (err) {
@@ -57,13 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const name = document.getElementById('reg-name').value;
       const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
       
       try {
         // Insere o novo utilizador no Supabase
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('users')
           .insert([
-            { name, email, level: 1, current_month_points: 0, total_points: 0 }
+            { name, email, password, level: 1, current_month_points: 0, total_points: 0, completed_tasks: 0 }
           ])
           .select()
           .single();

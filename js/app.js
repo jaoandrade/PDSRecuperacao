@@ -16,6 +16,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const elStatTasksDone = document.getElementById('stat-tasks-done');
   const missionsContainer = document.getElementById('missions-container');
   const btnLogout = document.getElementById('logout-btn');
+  const elCurrentDate = document.getElementById('current-date');
+  const customTaskForm = document.getElementById('custom-task-form');
+
+  if (elCurrentDate) {
+    const today = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    elCurrentDate.textContent = today.toLocaleDateString('pt-PT', options);
+  }
 
   // Inicializar UI com dados locais (para rapidez)
   elProfileName.textContent = userData.name;
@@ -26,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function fetchData() {
     try {
       // 1. Atualizar dados do Utilizador
-      const { data: user, error: userError } = await supabase
+      const { data: user, error: userError } = await supabaseClient
         .from('users')
         .select('*')
         .eq('id', userData.id)
@@ -38,18 +46,43 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       // 2. Buscar Missões (da tabela missions ou user_missions)
-      const { data: missions, error: missionsError } = await supabase
+      const { data: missions, error: missionsError } = await supabaseClient
         .from('missions')
         .select('*');
 
+      // Buscar missões personalizadas do utilizador
+      const { data: userMissions, error: userMissionsError } = await supabaseClient
+        .from('user_missions')
+        .select('*')
+        .eq('user_id', userData.id)
+        .eq('is_completed', false);
+
+      let fetchedMissions = [];
+
       if (!missionsError && missions && missions.length > 0) {
-        currentMissions = missions.map(m => ({
+        fetchedMissions = missions.map(m => ({
           id: m.id,
           title: m.title,
           category: m.category,
           points: m.points_reward,
-          completed: false // Simplificado: para um sistema real, checaríamos user_missions
+          completed: false
         }));
+      }
+
+      if (!userMissionsError && userMissions && userMissions.length > 0) {
+        const customMissions = userMissions.map(m => ({
+          id: m.id,
+          title: m.custom_title,
+          category: m.category,
+          points: m.points_reward,
+          completed: m.is_completed,
+          isCustom: true
+        }));
+        fetchedMissions = [...fetchedMissions, ...customMissions];
+      }
+
+      if (fetchedMissions.length > 0) {
+        currentMissions = fetchedMissions;
       } else {
         // Fallback se a tabela estiver vazia
         currentMissions = [
@@ -113,6 +146,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!mission || mission.completed) return;
 
     mission.completed = true;
+
+    if (mission.isCustom) {
+      await supabaseClient
+        .from('user_missions')
+        .update({ is_completed: true, completed_at: new Date().toISOString() })
+        .eq('id', mission.id);
+    }
     
     // Atualizar no Supabase
     const newMonthPoints = userData.current_month_points + mission.points;
@@ -120,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const newCompletedTasks = (userData.completed_tasks || 0) + 1;
     let newLevel = Math.floor(newTotalPoints / 50) + 1;
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('users')
       .update({ 
         current_month_points: newMonthPoints, 
@@ -176,6 +216,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     localStorage.removeItem('mission_user');
     window.location.href = 'index.html';
   });
+
+  if (customTaskForm) {
+    customTaskForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('custom-task-title').value;
+      const category = document.getElementById('custom-task-category').value;
+      
+      const tempId = 'custom-' + Date.now();
+      const newTask = {
+        id: tempId,
+        title: title,
+        category: category,
+        points: 5, // Pontos base para tarefa personalizada
+        completed: false,
+        isCustom: true
+      };
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('user_missions')
+          .insert([{
+            user_id: userData.id,
+            custom_title: title,
+            category: category,
+            points_reward: 5,
+            is_completed: false
+          }])
+          .select()
+          .single();
+          
+        if (!error && data) {
+          newTask.id = data.id; // Atualiza com o ID real da BD
+        } else {
+          console.warn('Não foi possível guardar na BD, mas foi adicionada localmente.', error);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      currentMissions.push(newTask);
+      renderMissions();
+      
+      document.getElementById('custom-task-title').value = '';
+      showToast('Tarefa personalizada adicionada!', 'gained');
+    });
+  }
 
   // Inicialização Real
   await fetchData();
